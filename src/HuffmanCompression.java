@@ -23,12 +23,13 @@ public class HuffmanCompression {
         BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));
         int read;
         StringBuilder stringBuilder = new StringBuilder();
-        long counter = 0;
+        int  counter = 0;
         while ((read = br.read()) != -1) {
             counter++;
             char c =  (char) ((byte) read);
             stringBuilder.append(c);
-            if (counter % this.n == 0) {
+            if (counter == this.n) {
+                counter = 0;
                 String key = stringBuilder.toString();
                 //System.out.println(Arrays.toString(key.getBytes(StandardCharsets.UTF_8)));
                 Integer freq = hashMap.get(key);
@@ -126,7 +127,6 @@ public class HuffmanCompression {
             String strbyte = encodedData.substring(i, i+8);
             i+=8;
             buffer[bufferIndx] = (byte)Integer.parseInt(strbyte, 2);
-           // System.out.println(strbyte + " " + buffer[bufferIndx]);
             bufferIndx++;
         }
         encodedData = encodedData.delete(0, i);
@@ -136,13 +136,9 @@ public class HuffmanCompression {
 
     public int countPaddingBits(HashMap<String, Integer> freqMap , HashMap<String, String> bitMap){
         int bitsNum = 0;
-
         for(Map.Entry<String, Integer> entry: freqMap.entrySet()) {
             bitsNum += entry.getValue() * bitMap.get(entry.getKey()).length();
         }
-
-
-      //  System.out.println(bitsNum / 8 + "fileSize");
         return 8 - bitsNum % 8;
     }
 
@@ -158,26 +154,13 @@ public class HuffmanCompression {
                 for(int j = 0; j < this.n; j++) {
                     i++;
                     c = encodingTable.charAt(i);
-
                     String cByte= Integer.toBinaryString((byte)c & 0xFF);
                     int zeroBits = 8 - cByte.length();
-                    System.out.println(cByte + " " + zeroBits + " " + (byte)c);
                     while (zeroBits-- != 0) {
-                        System.out.println("kkk");
                         binaryTable.append("0");
                     }
                     binaryTable.append(cByte);
 
-
-
-                   // System.out.println(cByte);
-
-                    //System.out.println(c);
-                    //String cByte = String.format("%8s", Integer.toBinaryString((byte)c & 0xFF)).replace(' ', '0');
-                    //System.out.println(c + " " + cByte);
-
-                   // binaryTable.append(cByte);
-                   // System.out.println(cByte);
                 }
             }
             i++;
@@ -235,311 +218,12 @@ public class HuffmanCompression {
     public static void main(String[] args) throws IOException {
 
 
-        HuffmanCompression huf = new HuffmanCompression(5);
-        String path = "C:\\Users\\maria\\Downloads\\file1.pdf";
+        HuffmanCompression huf = new HuffmanCompression(1);
+        String path = "C:\\Users\\maria\\Downloads\\gbbct10.seq";
 
         long x= System.currentTimeMillis();
         huf.compress(path);
         System.out.println(System.currentTimeMillis() - x);
-
-        byte z = 5;
-        //System.out.println(huf.convertToBinaryString(z));
-
-
-        /*
-        HashMap<String, Integer> hashMap = huf.countFrequency(path);
-
-        Node root = huf.huffman(hashMap);
-        HashMap<String, String> hashMap1 = new HashMap<>();
-        StringBuilder builder = new StringBuilder();
-        huf.constructHashTable(root, "", hashMap1);
-      //  System.out.println(builder);
-      //
-        //  System.out.println(huf.encodingTable);
-
-        //Node t = huf.reconstructTable(builder);
-        HashMap<String, String> hh = new HashMap<>();
-        StringBuilder jjj = new StringBuilder();
-        //huf.constructHashTable(t, "", hh, jjj);
-        System.out.println(System.currentTimeMillis()-x);
-
-        for(Map.Entry<String, String> entry: hh.entrySet()) {
-            System.out.println(entry);
-        }
-        for(Map.Entry<String, String> entry: hashMap1.entrySet()) {
-            System.out.println(entry);
-        }
-        System.out.println(builder);
-
-
-
-
-
-        int y = huf.countPaddingBits(hashMap, hashMap1);
-        huf.compress(hashMap1, path,  y);
-        /*
-
-        //System.out.println(builder);
-
-        //System.out.println("Padd" + y);
-
-       // huf.compress(hashMap1, path, 1, y, );
-        //huf.decompress("output.txt");
-
-
-
-        for(Map.Entry<String, String> entry: hashMap1.entrySet()) {
-            System.out.println(entry);
-        }
-
-
-        BufferedInputStream brr = new BufferedInputStream(new FileInputStream(path));
-        int read;
-        StringBuilder s = new StringBuilder();
-        while ((read = brr.read()) != -1) {
-            String b1 = String.valueOf((char)read);
-            s.append(hashMap1.get(b1));
-
-
-        }
-        System.out.println("c" + s);
-        HashMap<String, String> map = new HashMap<>();
-
-        File file = new File("output.txt");
-
-        long l = file.length();
-        System.out.println(l + "file");
-
-        //byte b1 = -127;
-
-        //String s1 = String.format("%8s", Integer.toBinaryString(b1 & 0xFF)).replace(' ', '0');
-     //   System.out.println((byte)Integer.parseInt("10000001", 2));
-
-
-
-        for(Map.Entry<String, String> entry: hashMap1.entrySet()) {
-            map.put(entry.getValue(), entry.getKey());
-        }
-
-        //decompress
-
-        BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));
-        int r;
-        StringBuilder stringBuilder = new StringBuilder();
-        while ((r = br.read()) != -1) {
-            byte b1 = (byte) r;
-            String s1 = String.format("%8s", Integer.toBinaryString(b1 & 0xFF)).replace(' ', '0');
-
-            stringBuilder.append(s1);
-        }
-        String la = "";
-        if(huf.lastBytes.length != 0){
-            int length = stringBuilder.length();
-            la = stringBuilder.substring(length - 8*huf.lastBytes.length, length);
-
-        }
-        System.out.println(stringBuilder);
-        StringBuilder key = new StringBuilder();
-        String content = "";
-        for(int i = 0; i < stringBuilder.length() && i <= huf.bitsNum; i++){
-            key.append(stringBuilder.charAt(i));
-            String e = map.get(key.toString());
-            if(e != null) {
-                content += e;
-                System.out.println(key);
-                key = new StringBuilder();
-            }
-        }
-        System.out.println("Content: "+ content);
-        //System.out.println((char) Integer.parseInt(la, 2));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*
-
-
-
-
-        for(Map.Entry<String, String> entry: hashMap1.entrySet()) {
-            System.out.println(entry);
-
-        }
-
-         */
-
-
-
-
-
-
-
-
-/*
-        FileInputStream inputStream = null;
-
-        inputStream = new FileInputStream(path);
-        Scanner sc = new Scanner(inputStream, "UTF-8");
-        while (sc.hasNextLine()) {
-            String line = sc.nextLine();
-             System.out.println(line);
-        }
-
- */
-
-
-
-        //System.out.println(System.currentTimeMillis() - x);
-
-
-/*
-        for(Map.Entry<String, Integer> entry: hashMap.entrySet()) {
-            System.out.println(entry);
-
-        }
-
-
-
-
-
-        /*
-
-        File file = new File(
-                "C:\\Users\\maria\\Downloads\\DiscordSetup.exe");
-
-        BufferedReader br = new BufferedReader(new FileReader(file));
-
-        String st;
-        char[] c = new char[3];
-        int read;
-        while ((read = br.read(c) ) != -1){
-            String data = new String(c, 0, read);
-            System.out.println(data + " " + data.length());
-
-        }
-        */
-
-
-
-
-
-
-
-
-
-/*
-
-
-
-        HuffmanCompression huf = new HuffmanCompression();
-        byte[] arr ={'a', 'b', 'c', 'c', 'c', 'd', 'a'};
-        HashMap<String, Integer> hashMap = new HashMap<>();
-        for(int i = 0; i < arr.length; i += 1) {
-
-            byte[] bytes = Arrays.copyOfRange(arr, i, i+1);
-
-            String key = new String(bytes, StandardCharsets.UTF_8);
-
-            System.out.println(key);
-
-            Integer freq = hashMap.get(key);
-            if(freq != null)
-                hashMap.put(key, freq + 1);
-            else
-                hashMap.put(key, 1);
-
-        }
-
-        PriorityQueue<Node> priorityQueue = new PriorityQueue<>();
-
-        for(Map.Entry<String, Integer> entry: hashMap.entrySet()) {
-            LeafNode leafNode= new LeafNode();
-            leafNode.data = entry.getKey();
-            leafNode.freq = entry.getValue();
-
-            System.out.println(entry);
-
-           priorityQueue.add(leafNode);
-
-        }
-        while (priorityQueue.size() != 1){
-            Node parent = new Node();
-            Node left =  priorityQueue.remove();
-            Node right = priorityQueue.remove();
-            parent.left = left;
-            parent.right = right;
-            parent.freq = left.freq + right.freq;
-            System.out.println(left.freq + " " + right.freq);
-            priorityQueue.add(parent);
-        }
-        Node root = priorityQueue.remove();
-
-        HashMap<String, String> hashMap1 = new HashMap<>();
-        huf.constructHashTable(root, "", hashMap1);
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for(Map.Entry<String, String> entry: hashMap1.entrySet()) {
-            System.out.println(entry);
-
-        }
-
-        for(int i = 0; i < arr.length; i++){
-            byte[] bytes = Arrays.copyOfRange(arr, i, i+1);
-            String key = new String(bytes, StandardCharsets.UTF_8);
-            String s = hashMap1.get(key);
-            stringBuilder.append(s);
-
-        }
-
-        System.out.println(stringBuilder);
-        byte b = Byte.parseByte(stringBuilder.substring(0, 7), 2);
-        System.out.println(b);
-
-        File fileOne=new File("fileone.txt");
-        FileOutputStream fos=new FileOutputStream(fileOne);
-        ObjectOutputStream oos=new ObjectOutputStream(fos);
-
-        oos.writeObject(hashMap1);
-        oos.flush();
-        fos.write(arr);
-        oos.close();
-        fos.close();
-
-        File toRead=new File("fileone.txt");
-        FileInputStream fis=new FileInputStream(toRead);
-        ObjectInputStream ois=new ObjectInputStream(fis);
-
-        HashMap<String,String> mapInFile=(HashMap<String,String>)ois.readObject();
-
-
-        for(Map.Entry<String, String> entry: mapInFile.entrySet()) {
-            System.out.println(entry);
-
-        }
-        int ch;
-        while ((ch=fis.read()) != -1)
-            System.out.print((char)ch);
-
-
-        //Node root = new Node();
-        //priorityQueue.add(root);
-
-         */
-
-
 
 
     }

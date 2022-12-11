@@ -60,7 +60,7 @@ public class HuffmanDecompression {
                System.out.println("hhh");
                 break;
             }
-            if(fileData.length() == maxLength){
+            if(fileData.length() >= maxLength){
                 writeBuffer(fileData, table, output);
             }
         }
@@ -157,15 +157,12 @@ public class HuffmanDecompression {
             byte b = (byte) br.read();
             String cByte= Integer.toBinaryString((byte)b & 0xFF);
             int zeroBits = 8 - cByte.length();
-           // System.out.println(cByte + " " + zeroBits + " " + (byte)c);
             while (zeroBits-- != 0) {
                 encodedTable.append("0");
             }
             encodedTable.append(cByte);
-          //  String s1 = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
-           // encodedTable.append(s1);
+
         }
-      //  System.out.println(this.tablePaddingBits +"dddddddddddddddddddddddd");
         encodedTable = encodedTable.delete(encodedTable.length()- this.tablePaddingBits, encodedTable.length());
         return encodedTable;
     }
@@ -194,17 +191,11 @@ public class HuffmanDecompression {
 
     int indx = 0;
     public Node reconstructTree(StringBuilder encodingTable){
-        //System.out.println(encodingTable);
         if(encodingTable.charAt(this.indx) == '1'){
             this.indx++;
-           // encodingTable.delete(0, 1);
             LeafNode node = new LeafNode();
-            //System.out.println();
             node.data  = getString(encodingTable.substring(this.indx, this.indx +8*n));
             this.indx += 8 *this.n;
-            //
-            //System.out.println(node.data);
-            //encodingTable.delete(0, 8*n);
             return node;
         }
         this.indx++;
@@ -216,20 +207,13 @@ public class HuffmanDecompression {
     }
 
 
-
-
     public String getString(String binaryString){
         StringBuilder data = new StringBuilder();
 
-        for(int i = 0; i < binaryString.length(); i+=8)
-        {
+        for(int i = 0; i < binaryString.length(); i+=8) {
             byte c = (byte) Integer.parseInt(binaryString.substring(i, i+8), 2);
-          //  System.out.println(binaryString);
             data.append((char)c);
-           // System.out.println(data + " " + c);
         }
-       //System.out.println("d" + Arrays.toString(data.toString().getBytes(StandardCharsets.UTF_8)));
-
         return data.toString();
     }
 
@@ -282,31 +266,6 @@ public class HuffmanDecompression {
         String shaChecksum = getFileChecksum(shaDigest, file);
         String s = getFileChecksum(shaDigest, file2);
         System.out.println(shaChecksum + " " + s);
-        /*
-
-        FileInputStream fr = new FileInputStream("file1.pdf");
-        FileInputStream fr2 = new FileInputStream("C:\\Users\\maria\\Downloads\\file1.pdf");
-        byte[] arr = fr.readAllBytes();
-        byte[] arr2 = fr2.readAllBytes();
-
-        for (int i = 0; i < arr.length; i++){
-            if (arr[i] != arr2[i]) {
-                System.out.println(arr[i] + " " + arr2[i]);
-            }
-
-        }
-
-
-         */
-
-
-
-
-
-
-
-
-
 
 
 

@@ -24,19 +24,22 @@ public class HuffmanDecompression {
         BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));
         String name = file.getName();
         name = name.substring(0, name.length() - 3);
-        FileOutputStream output = new FileOutputStream(name);
+        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(name));
 
         extractHeaderInfo(br);
         StringBuilder tree = readTree(br);
         Node root = reconstructTree(tree);
         HashMap<String, String> table = new HashMap<>();
+        long t = System.currentTimeMillis();
 
         constructHashTable(root, "", table);
+        System.out.println(System.currentTimeMillis() - t);
 
-        int maxLength = 80000;
+        int maxLength = 8000;
         StringBuilder fileData = new StringBuilder();
         int read;
         int read2 = br.read();
+        Node itr = root;
         //write last bytes
         //remove padding لسة عايزة تتظبط
         // table not constructed properly
@@ -50,26 +53,24 @@ public class HuffmanDecompression {
             while (zeroBits-- != 0) {
                 fileData.append("0");
             }
-           // String s1 = String.format("%8s", Integer.toBinaryString((byte) read & 0xFF)).replace(' ', '0');
-           // System.out.println(dataLength);
             fileData.append(cByte);
             if(read2 == -1) {
-               // System.out.println(this.paddingBits);
-                fileData.delete(fileData.length() -  this.paddingBits, fileData.length());
-               // System.out.println(fileData);
-               System.out.println("hhh");
+               fileData.delete(fileData.length() -  this.paddingBits, fileData.length());
                 break;
             }
             if(fileData.length() >= maxLength){
-                writeBuffer(fileData, table, output);
+
+                itr = getData(fileData, root, itr, output);
+
+                //writeBuffer(fileData, table, output);
             }
         }
-      //  System.out.println(fileData);
+
+        getData(fileData, root, itr, output);
 
 
-        writeBuffer(fileData, table, output);
+       // writeBuffer(fileData, table, output);
         if(lastBytes.length != 0) {
-            System.out.println("anahena");
             output.write(lastBytes);
             output.flush();
         }
@@ -78,10 +79,10 @@ public class HuffmanDecompression {
     }
 
 
-    public void writeBuffer(StringBuilder encodedData, HashMap<String, String> table, FileOutputStream output) throws IOException {
+    public void writeBuffer(StringBuilder encodedData, HashMap<String, String> table, BufferedOutputStream output) throws IOException {
         StringBuilder key = new StringBuilder();
         int indx = 0;
-        byte[] buffer = new byte[8000];
+        byte[] buffer = new byte[1024];
         int bufferIndx = 0;
         for(int i = 0; i < encodedData.length(); i++){
             //System.out.println("hhhh");
@@ -109,6 +110,46 @@ public class HuffmanDecompression {
         }
         output.write(remBuffer);
         encodedData.delete(0, indx);
+    }
+
+
+    public Node getData(StringBuilder encodedData, Node root, Node itr, BufferedOutputStream output) throws IOException {
+        int indx = 0;
+        byte[] buffer = new byte[1024];
+        int bufferIndx = 0;
+        if(itr == null)
+            itr = root;
+
+        for(int i = 0; i < encodedData.length(); i++){
+            if(encodedData.charAt(i)== '0')
+                itr = itr.left;
+            else
+                itr = itr.right;
+
+            if(itr instanceof LeafNode){
+                String value = ((LeafNode) itr).data;
+                itr = root;
+                indx += i;
+                for (int j = 0; j < this.n; j++){
+
+                    if(bufferIndx == buffer.length){
+                        bufferIndx = 0;
+                        output.write(buffer);
+                    }
+                    buffer[bufferIndx++] = (byte) value.charAt(j);
+                }
+
+            }
+        }
+        byte[] remBuffer = new byte[bufferIndx];
+        for (int i = 0; i < bufferIndx; i++){
+            remBuffer[i] = buffer[i];
+        }
+        output.write(remBuffer);
+        output.flush();
+        encodedData.delete(0, indx);
+        return itr;
+
     }
 
 
@@ -155,7 +196,7 @@ public class HuffmanDecompression {
         StringBuilder encodedTable = new StringBuilder();
         for(int i = 0; i < this.tableLength; i++){
             byte b = (byte) br.read();
-            String cByte= Integer.toBinaryString((byte)b & 0xFF);
+            String cByte= Integer.toBinaryString(b & 0xFF);
             int zeroBits = 8 - cByte.length();
             while (zeroBits-- != 0) {
                 encodedTable.append("0");
@@ -251,21 +292,33 @@ public class HuffmanDecompression {
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 
+        long t = System.currentTimeMillis();
+        /*
 
         HuffmanDecompression decompression = new HuffmanDecompression();
         String path = "file1.pdf.hc";
 
         decompression.decompress(path);
+        System.out.println(System.currentTimeMillis() - t);
 
-        File file = new File("file1.pdf");
-        File file2 = new File("C:\\Users\\maria\\Downloads\\file1.pdf");
+         */
+
+        File file = new File("gbbct10.seq");
+        File file2 = new File("C:\\Users\\maria\\Downloads\\gbbct10.seq");
         //Use SHA-1 algorithm
+
+
 
         MessageDigest shaDigest = MessageDigest.getInstance("SHA-256");
 
         String shaChecksum = getFileChecksum(shaDigest, file);
         String s = getFileChecksum(shaDigest, file2);
+
+        if(s.equals(shaChecksum))
+            System.out.println("heeeeeeeeeeeh");
         System.out.println(shaChecksum + " " + s);
+
+
 
 
 

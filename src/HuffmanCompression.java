@@ -50,6 +50,7 @@ public class HuffmanCompression {
             }
         }
         return hashMap;
+
     }
 
     public Node huffman(HashMap<String, Integer> hashMap){
@@ -92,7 +93,7 @@ public class HuffmanCompression {
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder encodedData = new StringBuilder();
         int counter = 0;
-        int maxLength = 80000;
+        int maxLength = 8000;
         while ((read = br.read()) != -1) {
             counter++;
             char c =  (char) ((byte) read);
@@ -198,8 +199,12 @@ public class HuffmanCompression {
         HashMap<String, Integer> frequencyTable = countFrequency(path);
         Node tree =huffman(frequencyTable);
         HashMap<String, String> hashMap = new HashMap<>();
+
         StringBuilder encodedTree = new StringBuilder();
+
         constructHashTable(tree, "", hashMap, encodedTree);
+        for(Map.Entry<String,String> entry : hashMap.entrySet())
+            System.out.println(entry);
         this.paddingBits = countPaddingBits(frequencyTable, hashMap);
         File file = new File(path);
         BufferedInputStream br = new BufferedInputStream(new FileInputStream(file));
@@ -218,8 +223,8 @@ public class HuffmanCompression {
     public static void main(String[] args) throws IOException {
 
 
-        HuffmanCompression huf = new HuffmanCompression(1);
-        String path = "C:\\Users\\maria\\Downloads\\gbbct10.seq";
+        HuffmanCompression huf = new HuffmanCompression(4);
+        String path = "D:\\[EgyBest].Harry.Potter.And.The.Deathly.Hallows.Part.2.2011.BluRay.1080p.x264.mp4";
 
         long x= System.currentTimeMillis();
         huf.compress(path);
